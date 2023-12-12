@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Upload</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      max-width: 300px;
+    }
+    input, button {
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>File Upload</h1>
+  <form action="/upload" method="post" enctype="multipart/form-data">
+    <label for="file">Select a file:</label>
+    <input type="file" name="file" id="file" accept=".json">
+    <button type="submit">Upload</button>
+  </form>
+  <hr>
+  <h2>Uploaded Files</h2>
+  <ul id="fileList"></ul>
+
+  <script>
+    // Fetch and display uploaded files
+    fetch('/files')
+      .then(response => response.json())
+      .then(files => {
+        const fileList = document.getElementById('fileList');
+        files.forEach(file => {
+          const listItem = document.createElement('li');
+          listItem.textContent = `${file.fileName} - ${file.s3Url}`;
+          fileList.appendChild(listItem);
+        });
+      })
+      .catch(error => console.error(error));
+  </script>
+</body>
+</html>
