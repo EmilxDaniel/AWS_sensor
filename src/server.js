@@ -18,43 +18,24 @@ const PORT = process.env.PORT || 3000;
 aws.config.loadFromPath('../config/aws-config.json');
 const s3 = new aws.S3();
 
-// Connect to MongoDB
-/*mongoose.connect('mongodb://127.0.0.1:27017/sensor', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-db.once('open', () => {
-  console.log('Connected to MongoDB');
-});
-
-// Define MongoDB schema and model
-const fileSchema = new mongoose.Schema({
-  fileName: String,
-  s3Url: String,
-  uploadDate: { type: Date, default: Date.now },
-});
-
-const File = mongoose.model('File', fileSchema);*/
 
 // Configure Multer for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage }).single('file');
 
-// Serve HTML and CSS for the form
+// HTML and CSS for the form
 app.get('/', (req, res) => {
   // const html = fs.readFileSync('index.html', 'utf8');
   // res.send(html);
   res.render('index');
 });
 
-// Handle file upload and store information in MongoDB and S3
+// store info in MongoDB and S3
 app.post('/upload', upload, async (req, res) => {
   try {
     const file = req.file;
 
-    // Upload to AWS S3
+    // Upload to S3
     const s3Params = {
       Bucket: 'sensorbucketaws',
       Key: `uploads/${file.originalname}`,
@@ -63,26 +44,21 @@ app.post('/upload', upload, async (req, res) => {
 
     const s3Response = await s3.upload(s3Params).promise();
 
-    // Save file information to MongoDB
-    // const newFile = new File({
-    //   fileName: file.originalname,
-    //   s3Url: s3Response.Location,
-      
-    // });
     const data={
         file_name: file.originalname,
         s3URL: s3Response.Location,
         date: Date.now(),
     }
-    await collection.insertMany([data]);
+    await collection.insertMany([data])
+    .then(() => console.log('File saved to MongoDB'))
+    .catch(error => console.error('Error saving file to MongoDB:', error));
     console.log(file.originalname);
     console.log(s3Response.Location);
 
-    // await newFile.save()
-    // .then(() => console.log('File saved to MongoDB'))
-    // .catch(error => console.error('Error saving file to MongoDB:', error));
+   
 
-    // res.status(201).json({ message: 'File uploaded successfully', file: newFile });
+    res.status(201)
+    .json({ message: 'File uploaded successfully', file: data });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });

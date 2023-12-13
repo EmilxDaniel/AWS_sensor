@@ -38,7 +38,7 @@
         const fileList = document.getElementById('fileList');
         files.forEach(file => {
           const listItem = document.createElement('li');
-          listItem.textContent = `${file.fileName} - ${file.s3Url}`;
+          listItem.textContent = `${file.file_name} - ${file.s3URL}`;
           fileList.appendChild(listItem);
         });
       })
